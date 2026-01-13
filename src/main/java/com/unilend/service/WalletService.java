@@ -2,6 +2,7 @@
 package com.unilend.service;
 
 import com.unilend.common.enums.TransactionType;
+import com.unilend.dto.request.TransferRequest;
 import com.unilend.dto.request.DepositRequest;
 import com.unilend.dto.request.WithdrawRequest;
 import com.unilend.entity.LedgerTransaction;
@@ -93,5 +94,58 @@ public class WalletService {
 
         // B5: Save new balance to wallet
         return walletRepository.save(wallet);
+    }
+
+    @Transactional(rollbackFor = Exception.class) // Roll back if any errors occur.
+    public void transferFunds(Long fromUserId, TransferRequest request) {
+
+        // 1. Validate: Do not transfer to yourself.
+        if (fromUserId.equals(request.getToUserId())) {
+            throw new RuntimeException("Cannot transfer money to yourself (Không thể tự chuyển tiền cho mình)");
+        }
+
+        // 2. Get the sender's wallet address. (Sender)
+        Wallet senderWallet = walletRepository.findByUserId(fromUserId)
+                .orElseThrow(() -> new RuntimeException("Sender wallet not found"));
+
+        // 3. Get the receiver's wallet address. (Receiver)
+        Wallet receiverWallet = walletRepository.findByUserId(request.getToUserId())
+                .orElseThrow(() -> new RuntimeException("Receiver wallet not found"));
+
+        // 4. check sender's wallet balance
+        if (senderWallet.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        // 5. PROCESS TRANSACTIONS
+        BigDecimal amount = request.getAmount();
+
+        // 5.1: DEDUCT THE DEPOSIT FROM THE SENDER (Debit)
+        senderWallet.setBalance(senderWallet.getBalance().subtract(amount));
+        walletRepository.save(senderWallet);
+
+        // Record in the ledger for the sender (Cash outflow - Negative amount)
+        LedgerTransaction senderLog = LedgerTransaction.builder()
+                .wallet(senderWallet)
+                .amount(amount.negate())
+                .type(TransactionType.TRANSFER)
+                .referenceId("TRF-OUT-" + System.currentTimeMillis())
+                .referenceType("USER_TRANSFER_TO_" + request.getToUserId())
+                .build();
+        ledgerTransactionRepository.save(senderLog);
+
+        // 5.2: ADD THE receiver's AMOUNT (Credit)
+        receiverWallet.setBalance(receiverWallet.getBalance().add(amount));
+        walletRepository.save(receiverWallet);
+
+        // Record in the ledger for the receiver (Cash Inflow - Positive Amount)
+        LedgerTransaction receiverLog = LedgerTransaction.builder()
+                .wallet(receiverWallet)
+                .amount(amount)
+                .type(TransactionType.TRANSFER)
+                .referenceId("TRF-IN-" + System.currentTimeMillis())
+                .referenceType("USER_TRANSFER_FROM_" + fromUserId)
+                .build();
+        ledgerTransactionRepository.save(receiverLog);
     }
 }

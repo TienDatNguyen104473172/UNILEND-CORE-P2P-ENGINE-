@@ -8,5 +8,6 @@ public enum TransactionType {
     LOAN_REPAYMENT,    // Pay off debt (Deduct money)
     INVESTMENT,        // Investment (Deduct money)
     INVESTMENT_RETURN, // Receive profits
-    FEE                // Service fees
+    FEE,                // Service fees
+    TRANSFER // transfer money
 }

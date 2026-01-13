@@ -2,6 +2,7 @@
 package com.unilend.controller;
 
 import com.unilend.dto.request.DepositRequest;
+import com.unilend.dto.request.TransferRequest;
 import com.unilend.dto.request.WithdrawRequest;
 import com.unilend.entity.Wallet;
 import com.unilend.security.CustomUserDetails;
@@ -43,7 +44,7 @@ public class WalletController {
         return ResponseEntity.ok(updatedWallet);
     }
 
-    // 👇 THÊM API MỚI: withdrawal
+    // New API: withdrawal
     // POST /api/wallet/withdraw
     @PostMapping("/withdraw")
     public ResponseEntity<?> withdraw(@Valid @RequestBody WithdrawRequest request) {
@@ -57,5 +58,21 @@ public class WalletController {
 
         // 3. return result
         return ResponseEntity.ok(updatedWallet);
+    }
+
+    // API: sending money
+    // POST /api/wallet/transfer
+    @PostMapping("/transfer")
+    public ResponseEntity<?> transfer(@Valid @RequestBody TransferRequest request) {
+        // 1. get sender ID from token
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assert authentication != null;
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        assert userDetails != null;
+        Long senderId = userDetails.getUser().getId();
+
+        // 2. call Service
+        walletService.transferFunds(senderId, request);
+        return ResponseEntity.ok("Transfer successful! (Chuyển tiền thành công)");
     }
 }
