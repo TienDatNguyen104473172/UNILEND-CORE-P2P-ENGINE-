@@ -6,6 +6,7 @@ import com.unilend.dto.response.JwtResponse;
 import com.unilend.entity.User;
 import com.unilend.repository.UserRepository;
 import com.unilend.security.JwtUtils;
+import com.unilend.service.WalletService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,9 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    WalletService walletService;
+
     // API 1: Login
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -49,6 +53,7 @@ public class AuthController {
 
         // 4. get user information to return.
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        assert userDetails != null;
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
         return ResponseEntity.ok(new JwtResponse(jwt,
@@ -76,8 +81,9 @@ public class AuthController {
                 .build();
 
         // 3. save to DB
-        userRepository.save(user);
-
+        User savedUser = userRepository.save(user); // Get the saved user (with ID)
+        // 4. CREATE A WALLET FOR THIS USER (NEW LOGIC)
+        walletService.createWalletForUser(savedUser); // call service here
         return ResponseEntity.ok("User registered successfully!");
     }
 }

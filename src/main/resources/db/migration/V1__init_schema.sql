@@ -13,7 +13,9 @@ create table wallets
     id      BIGSERIAL PRIMARY KEY,
     user_id bigint not null unique,      -- user only have 1 wallet
     balance DECIMAL(19, 2) DEFAULT 0.00, -- Use DECIMAL for currency (Fintech standard), If no value is passed to the balance when insert, the database will automatically assign a value of 0.00.
-    version INT DEFAULT 0, -- Used for Optimistic Locking (anti-dispute locking) / avoiding race condition or lost update
+    currency    VARCHAR(10) NOT NULL DEFAULT 'AUD',
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    version bigint DEFAULT 0, -- Used for Optimistic Locking (anti-dispute locking) / avoiding race condition or lost update
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -25,7 +27,7 @@ CREATE TABLE ledger_transactions
     wallet_id      BIGINT         NOT NULL,
     amount         DECIMAL(19, 2) NOT NULL, -- The amount (+) is for depositing/receiving, - is for withdrawing/paying.
     type           VARCHAR(50)    NOT NULL, -- Transaction types: Deposit, Withdrawal, Investment...
-    reference_id   BIGINT,                  -- ID of the relevant entity (e.g., loan ID)
+    reference_id   VARCHAR(100),                  -- ID of the relevant entity (e.g., loan ID)
     reference_type VARCHAR(50),             -- Type of client: Loan, Investment...
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (wallet_id) REFERENCES wallets (id)
