@@ -2,6 +2,7 @@
 package com.unilend.controller;
 
 import com.unilend.dto.request.DepositRequest;
+import com.unilend.dto.request.WithdrawRequest;
 import com.unilend.entity.Wallet;
 import com.unilend.security.CustomUserDetails;
 import com.unilend.service.WalletService;
@@ -39,6 +40,22 @@ public class WalletController {
         Wallet updatedWallet = walletService.depositFund(userId, request);
 
         // 3. Return result
+        return ResponseEntity.ok(updatedWallet);
+    }
+
+    // 👇 THÊM API MỚI: withdrawal
+    // POST /api/wallet/withdraw
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> withdraw(@Valid @RequestBody WithdrawRequest request) {
+        // 1. get User ID from Token (security)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUser().getId();
+
+        // 2. call service to withdraw
+        Wallet updatedWallet = walletService.withdrawFund(userId, request);
+
+        // 3. return result
         return ResponseEntity.ok(updatedWallet);
     }
 }

@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class DepositRequest {
 
     @NotNull(message = "Amount cannot be null")
-    @DecimalMin(value = "10.00", message = "Minimum deposit amount is 10.00") // Quy định nạp tối thiểu 10 đồng
+    @DecimalMin(value = "10.00", message = "Minimum deposit amount is 10.00") // The minimum deposit amount is 10 AUD.
     private BigDecimal amount;
 
     // Later we can add: bankSource, paymentMethod...

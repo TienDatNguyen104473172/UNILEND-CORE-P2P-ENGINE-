@@ -3,6 +3,7 @@ package com.unilend.service;
 
 import com.unilend.common.enums.TransactionType;
 import com.unilend.dto.request.DepositRequest;
+import com.unilend.dto.request.WithdrawRequest;
 import com.unilend.entity.LedgerTransaction;
 import com.unilend.entity.User;
 import com.unilend.entity.Wallet;
@@ -60,6 +61,37 @@ public class WalletService {
         wallet.setBalance(newBalance);
 
         // B4: Save wallet
+        return walletRepository.save(wallet);
+    }
+
+    @Transactional //rollback service functionality
+    public Wallet withdrawFund(Long userId, WithdrawRequest request) {
+        // B1: search wallets
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        // B2: check balance (important)
+        // wallet.getBalance().compareTo(request.getAmount()) < 0 means Balance < Amount
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Insufficient balance (Không đủ tiền để rút)");
+        }
+
+        // B3: Record in the General Ledger (Type: WITHDRAWAL)
+        LedgerTransaction transaction = LedgerTransaction.builder()
+                .wallet(wallet)
+                .amount(request.getAmount().negate()) // Record a negative number to represent the amount of money withdrawn (Optional, or record a positive number as per convention).
+                .type(TransactionType.WITHDRAWAL)     // Type: Withdrawal
+                .referenceId("SELF-WITHDRAW-" + System.currentTimeMillis())
+                .referenceType("BANK_TRANSFER")
+                .build();
+
+        ledgerTransactionRepository.save(transaction);
+
+        // B4: Deduct money
+        BigDecimal newBalance = wallet.getBalance().subtract(request.getAmount());
+        wallet.setBalance(newBalance);
+
+        // B5: Save new balance to wallet
         return walletRepository.save(wallet);
     }
 }
