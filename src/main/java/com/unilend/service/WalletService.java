@@ -5,6 +5,7 @@ import com.unilend.common.enums.TransactionType;
 import com.unilend.dto.request.TransferRequest;
 import com.unilend.dto.request.DepositRequest;
 import com.unilend.dto.request.WithdrawRequest;
+import com.unilend.dto.response.TransactionResponse;
 import com.unilend.entity.LedgerTransaction;
 import com.unilend.entity.User;
 import com.unilend.entity.Wallet;
@@ -12,8 +13,11 @@ import com.unilend.repository.LedgerTransactionRepository;
 import com.unilend.repository.WalletRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.math.BigDecimal;
+import java.util.stream.Collectors;
 
 @Service
 public class WalletService {
@@ -147,5 +151,25 @@ public class WalletService {
                 .referenceType("USER_TRANSFER_FROM_" + fromUserId)
                 .build();
         ledgerTransactionRepository.save(receiverLog);
+    }
+
+    // Import TransactionResponse, List, Collectors, v.v.
+    public List<TransactionResponse> getTransactionHistory(Long userId) {
+        // 1. find user wallet
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        // 2. Get the list of transactions from the database.
+        List<LedgerTransaction> transactions = ledgerTransactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
+
+        // 3. Convert from Entity to DTO (Dùng Stream cho ngầu)
+        return transactions.stream()
+                .map(tx -> TransactionResponse.builder()
+                        .referenceId(tx.getReferenceId())
+                        .amount(tx.getAmount())
+                        .type(tx.getType())
+                        .createdAt(tx.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

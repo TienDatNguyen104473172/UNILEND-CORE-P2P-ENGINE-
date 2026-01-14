@@ -4,6 +4,7 @@ package com.unilend.controller;
 import com.unilend.dto.request.DepositRequest;
 import com.unilend.dto.request.TransferRequest;
 import com.unilend.dto.request.WithdrawRequest;
+import com.unilend.dto.response.TransactionResponse;
 import com.unilend.entity.Wallet;
 import com.unilend.security.CustomUserDetails;
 import com.unilend.service.WalletService;
@@ -11,10 +12,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -34,7 +34,9 @@ public class WalletController {
         // 1.get the login information of the currently logged-in user from the Token (Security).
         // Never trust IDs sent from the client; always get them from the SecurityContext.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assert authentication != null;
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        assert userDetails != null;
         Long userId = userDetails.getUser().getId();
 
         // 2. Call Service to handle it.
@@ -50,7 +52,9 @@ public class WalletController {
     public ResponseEntity<?> withdraw(@Valid @RequestBody WithdrawRequest request) {
         // 1. get User ID from Token (security)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assert authentication != null;
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        assert userDetails != null;
         Long userId = userDetails.getUser().getId();
 
         // 2. call service to withdraw
@@ -74,5 +78,23 @@ public class WalletController {
         // 2. call Service
         walletService.transferFunds(senderId, request);
         return ResponseEntity.ok("Transfer successful! (Chuyển tiền thành công)");
+    }
+
+    // API: View transaction history
+    // GET /api/wallet/transactions
+    @GetMapping("/transactions")
+    public ResponseEntity<List<TransactionResponse>> getHistory() {
+        // 1. get id from token
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assert authentication != null;
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        assert userDetails != null;
+        Long userId = userDetails.getUser().getId();
+
+        // 2. call Service
+        List<TransactionResponse> history = walletService.getTransactionHistory(userId);
+
+        // 3. return result
+        return ResponseEntity.ok(history);
     }
 }

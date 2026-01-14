@@ -53,9 +53,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // disabled CSRF because using a Token (Stateless).
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler)) // Xử lý lỗi 401
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng Session
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // turn of session
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Open access to login/registration APIs.
+                        .requestMatchers("/api/auth/**").permitAll() // Open access to log-in/registration APIs.
                         .requestMatchers("/api/test/**").permitAll() // Allow API testing (if necessary).
                         .anyRequest().authenticated() // All other APIs REQUIRE login.
                 );
