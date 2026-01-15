@@ -57,6 +57,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Open access to log-in/registration APIs.
                         .requestMatchers("/api/test/**").permitAll() // Allow API testing (if necessary).
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().authenticated() // All other APIs REQUIRE login.
                 );
         // Add Provider

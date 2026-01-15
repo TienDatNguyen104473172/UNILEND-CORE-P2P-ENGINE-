@@ -1,0 +1,43 @@
+name: Unilend CI/CD
+
+# Chạy khi push code vào nhánh master
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Lấy code về
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Cài đặt Java 21 (Khớp với dự án của bạn)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 3. Build file .jar (Quan trọng: skipTests để không cần DB)
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # 4. Đăng nhập Docker Hub (Dùng Secret bảo mật)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 5. Build ảnh Docker và đẩy lên mạng
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # Thay 'datnguyen' bằng username Docker Hub của bạn
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/unilend-core:latest
