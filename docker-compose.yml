@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # 1. DỊCH VỤ DATABASE (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: unilend-db
+    restart: always
+    environment:
+      POSTGRES_DB: unilend
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123 # Mật khẩu chung cho môi trường Docker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. DỊCH VỤ APP (Code Java của bạn)
+  app:
+    image: tiendatnguyen/unilend-core:latest
+    container_name: unilend-api
+    restart: on-failure
+    ports:
+      - "8088:8088"
+    environment:
+      # Cấu hình để App kết nối vào container 'db' thay vì localhost
+      DB_URL: jdbc:postgresql://db:5432/unilend
+      DB_USERNAME: postgres
+      DB_PASSWORD: password123
+    depends_on:
+      db:
+        condition: service_healthy # Chờ DB khỏe mạnh rồi App mới chạy
+
+volumes:
+  postgres_data:
