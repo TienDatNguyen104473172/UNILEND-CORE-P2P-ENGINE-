@@ -1,0 +1,313 @@
+{
+	"info": {
+		"_postman_id": "fa65743d-2748-4aec-93b9-b1491c321b00",
+		"name": "Unilend Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "51365178",
+		"_collection_link": "https://nguyentiendat2005cp-5084250.postman.co/workspace/Tien-Dat's-Workspace~09dc50ba-0e2d-4f42-837b-f6e2d0de66a8/collection/51365178-fa65743d-2748-4aec-93b9-b1491c321b00?action=share&source=collection_link&creator=51365178"
+	},
+	"item": [
+		{
+			"name": "1. Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"hax\",\r\n    \"password\": \"123456789\",\r\n    \"email\": \"yellow@gmail.com\",\r\n    \"fullName\": \"baka\",\r\n    \"role\": \"ADMIN\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/signup",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. Verify successful login (200 OK)\r",
+							"pm.test(\"Login Success\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// 2. get the returned data.\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"// 3. Automatically save the Token to an environment variable\r",
+							"// (Postman will look for a field named \"token\" or \"accessToken\" to save it)\r",
+							"if (jsonData.token) {\r",
+							"    pm.environment.set(\"jwt_token\", jsonData.token);\r",
+							"    console.log(\"token saved: \" + jsonData.token);\r",
+							"} \r",
+							"else if (jsonData.accessToken) {\r",
+							"    pm.environment.set(\"jwt_token\", jsonData.accessToken);\r",
+							"    console.log(\"accessToken saved\");\r",
+							"}\r",
+							"else {\r",
+							"    console.log(\"token not found\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"trustmeiscat@gmail.com\",\r\n    \"password\": \"123456789\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Deposit",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Deposit successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0cnVzdG1laXNjYXRAZ21haWwuY29tIiwiaWF0IjoxNzY4NDMzNzI2LCJleHAiOjE3Njg1MjAxMjZ9.41OYRiQUtudytyQ34CRt-u2ZRSFU1rIGwt70S3P1Svs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"amount\": 1000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/wallet/deposit",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"wallet",
+						"deposit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Withdraw",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"withdraw successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0cnVzdG1laXNjYXRAZ21haWwuY29tIiwiaWF0IjoxNzY4NDMzNzI2LCJleHAiOjE3Njg1MjAxMjZ9.41OYRiQUtudytyQ34CRt-u2ZRSFU1rIGwt70S3P1Svs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"amount\": 500\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/wallet/withdraw",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"wallet",
+						"withdraw"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Transfer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Transfering successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(pm.response.text()).to.include(\"successful\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0cnVzdG1laXNjYXRAZ21haWwuY29tIiwiaWF0IjoxNzY4NDMzNzI2LCJleHAiOjE3Njg1MjAxMjZ9.41OYRiQUtudytyQ34CRt-u2ZRSFU1rIGwt70S3P1Svs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"toUserId\": \"4\",\r\n    \"amount\": 350\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/wallet/transfer",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"wallet",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Check History Transactions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"get history successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    // Check if the returned data is an array (List).\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.be.an(\"array\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0cnVzdG1laXNjYXRAZ21haWwuY29tIiwiaWF0IjoxNzY4NDMzNzI2LCJleHAiOjE3Njg1MjAxMjZ9.41OYRiQUtudytyQ34CRt-u2ZRSFU1rIGwt70S3P1Svs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/wallet/transactions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"wallet",
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
